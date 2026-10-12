@@ -32,8 +32,10 @@ On a PR page, click **Copy link** or **Copy stack**, or press <kbd>C</kbd> then:
 | --- | --- |
 | <kbd>P</kbd> | The PR, as a rich link with its diff stat |
 | <kbd>S</kbd> | The whole stack |
-| <kbd>L</kbd> / <kbd>G</kbd> | The link / the GitHub link |
-| <kbd>T</kbd> / <kbd>B</kbd> | The title / the branch name |
+| <kbd>L</kbd> | The link |
+| <kbd>G</kbd> | The GitHub link |
+| <kbd>T</kbd> | The title |
+| <kbd>B</kbd> | The branch name |
 | <kbd>C</kbd> | A `gh stack checkout` command |
 
 The toolbar popup (<kbd>⌥</kbd><kbd>⇧</kbd><kbd>C</kbd>) previews the stack first.
