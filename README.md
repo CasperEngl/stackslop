@@ -26,17 +26,17 @@ To update, run `git pull` in the folder, then click ↻ on the extension's card.
 
 ## Use
 
-On a PR page, click **Copy link** or **Copy stack**, or press <kbd>C</kbd> then:
+On a PR page, click **Copy link** or **Copy stack**, or use a shortcut:
 
-| Key | Copies |
+| Shortcut | Copies |
 | --- | --- |
-| <kbd>P</kbd> | The PR, as a rich link with its diff stat |
-| <kbd>S</kbd> | The whole stack |
-| <kbd>L</kbd> | The link |
-| <kbd>G</kbd> | The GitHub link |
-| <kbd>T</kbd> | The title |
-| <kbd>B</kbd> | The branch name |
-| <kbd>C</kbd> | A `gh stack checkout` command |
+| <kbd>C</kbd> then <kbd>P</kbd> | The PR, as a rich link with its diff stat |
+| <kbd>C</kbd> then <kbd>S</kbd> | The whole stack |
+| <kbd>C</kbd> then <kbd>L</kbd> | The link |
+| <kbd>C</kbd> then <kbd>G</kbd> | The GitHub link |
+| <kbd>C</kbd> then <kbd>T</kbd> | The title |
+| <kbd>C</kbd> then <kbd>B</kbd> | The branch name |
+| <kbd>C</kbd> then <kbd>C</kbd> | A `gh stack checkout` command |
 
 The toolbar popup (<kbd>⌥</kbd><kbd>⇧</kbd><kbd>C</kbd>) previews the stack first.
 
