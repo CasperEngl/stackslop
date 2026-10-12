@@ -8,11 +8,12 @@ const loadLinks = async (url) => {
 
   const { token, linkTarget } = await chrome.storage.local.get(["token", "linkTarget"]);
   try {
-    const { pr, stack } = await fetchPrWithStack(ref, token);
+    const { pr, stack, stackFailed } = await fetchPrWithStack(ref, token);
     return {
       ok: true,
       pr: formatPrs([pr], linkTarget),
       stack: stack && { ...formatStack(stack, linkTarget), count: stack.prs.length },
+      stackFailed,
       plain: {
         link: linkFor(pr, linkTarget),
         github: pr.url,

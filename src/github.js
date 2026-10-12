@@ -97,13 +97,20 @@ export const fetchStack = async ({ owner, repo, number }, token) => {
   return { trunk: stack.base.ref, prs: prs.map((pr) => withDetails(pr, details)) };
 };
 
-/** Loads the PR and, when it sits in a stack of two or more PRs, that stack. */
+/**
+ * Loads the PR and, when it sits in a stack of two or more PRs, that stack. `stackFailed`
+ * tells a stack that couldn't load apart from a PR that has none.
+ */
 export const fetchPrWithStack = async (ref, token) => {
   const [pr, details, stack] = await Promise.all([
     fetchPr(ref, token),
     fetchPrDetails(ref, [ref.number], token).catch(() => new Map()),
-    // A missing stack must not block copying the PR itself.
-    fetchStack(ref, token).catch(() => null),
+    // A missing stack must not block copying the PR itself. A 404 means the repo has no stacks.
+    fetchStack(ref, token).catch((error) => (error.status === 404 ? null : undefined)),
   ]);
-  return { pr: withDetails(pr, details), stack: stack !== null && stack.prs.length > 1 ? stack : null };
+  return {
+    pr: withDetails(pr, details),
+    stack: stack && stack.prs.length > 1 ? stack : null,
+    stackFailed: stack === undefined,
+  };
 };

@@ -15,6 +15,8 @@ const X_ICON = svg(
 // The React PR header first, then the classic one.
 const TITLE_SELECTOR = 'h1[data-component="PH_Title"], .gh-header-title';
 const CACHE_MS = 60_000;
+const RETRY_MS = 2000;
+const MAX_RETRIES = 3;
 
 const cache = new Map();
 
@@ -28,6 +30,10 @@ const loadLinks = (url) => {
     .sendMessage({ type: "load-links", url })
     .catch((error) => ({ ok: false, message: error.message }));
   cache.set(url, { at: Date.now(), links });
+  // A failed load is worth another try right away, so don't keep it.
+  links.then((result) => {
+    if ((!result.ok || result.stackFailed) && cache.get(url)?.links === links) cache.delete(url);
+  });
   return links;
 };
 
@@ -119,14 +125,28 @@ const render = (url, name, spot) => {
   stackButton.hidden = true;
   container.append(prButton, stackButton);
 
-  const links = loadLinks(url);
-  links.then((result) => {
-    if (result.ok && result.stack) {
-      stackButton.lastChild.textContent = `Copy stack (${result.stack.count})`;
-      stackButton.hidden = false;
-    }
-    if (result.needsToken) prButton.title = "GitHub needs a token for this repo. Click to add one.";
-  });
+  let links;
+  let retries = 0;
+  const load = () => {
+    const loading = loadLinks(url);
+    links = loading;
+    loading.then((result) => {
+      // A newer load has taken over.
+      if (links !== loading) return;
+      const hasStack = Boolean(result.ok && result.stack);
+      if (hasStack) stackButton.lastChild.textContent = `Copy stack (${result.stack.count})`;
+      stackButton.hidden = !hasStack;
+      if (result.needsToken) prButton.title = "GitHub needs a token for this repo. Click to add one.";
+      // GitHub's API fails now and then; without a retry the button stays gone until a reload.
+      const failed = !result.ok ? !result.needsToken : result.stackFailed;
+      if (failed && container.isConnected && retries < MAX_RETRIES) setTimeout(load, RETRY_MS * 2 ** retries++);
+    });
+  };
+  load();
+  container.reload = () => {
+    retries = 0;
+    load();
+  };
 
   prButton.addEventListener("click", () => copy("pr", links, (...args) => flash(prButton, ...args)));
   stackButton.addEventListener("click", () => copy("stack", links, (...args) => flash(stackButton, ...args)));
@@ -204,6 +224,12 @@ new MutationObserver(() => {
   });
 }).observe(document.documentElement, { childList: true, subtree: true });
 sync();
+
+// A PR can join a stack after its page loaded, so look again when the tab comes back.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  for (const container of document.querySelectorAll(".stackslop-actions")) container.reload();
+});
 
 // Graphite's shortcuts: C, then the key a kind lists. The first C still reaches GitHub,
 // which uses it on the Files tab; only the second key is ours.
