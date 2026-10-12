@@ -1,5 +1,5 @@
 import { diffStat, formatPrs } from "./format.js";
-import { GitHubError, fetchPr, fetchStack, parsePrUrl } from "./github.js";
+import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 const status = document.getElementById("status");
 const preview = document.getElementById("preview");
@@ -77,13 +77,9 @@ const main = async () => {
   }
 
   const { token } = await chrome.storage.local.get("token");
-  const [pr, stack] = await Promise.all([
-    fetchPr(ref, token),
-    // A missing stack must not block copying the PR itself.
-    fetchStack(ref, token).catch(() => null),
-  ]);
+  const { pr, stack } = await fetchPrWithStack(ref, token);
 
-  const hasStack = stack !== null && stack.length > 1;
+  const hasStack = stack !== null;
   renderPreview(hasStack ? stack : [pr], pr.number);
   status.hidden = true;
   actions.hidden = false;

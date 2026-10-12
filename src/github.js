@@ -54,3 +54,13 @@ export const fetchStack = async ({ owner, repo, number }, token) => {
   const open = stack.pull_requests.filter((pr) => pr.state === "open").reverse();
   return Promise.all(open.map((pr) => fetchPr({ owner, repo, number: pr.number }, token)));
 };
+
+/** Loads the PR and, when it sits in a stack of two or more open PRs, that stack. */
+export const fetchPrWithStack = async (ref, token) => {
+  const [pr, stack] = await Promise.all([
+    fetchPr(ref, token),
+    // A missing stack must not block copying the PR itself.
+    fetchStack(ref, token).catch(() => null),
+  ]);
+  return { pr, stack: stack !== null && stack.length > 1 ? stack : null };
+};
