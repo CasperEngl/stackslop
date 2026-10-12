@@ -1,4 +1,4 @@
-import { formatPrs } from "./format.js";
+import { formatPrs, formatStack } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 // Fetches for the in-page buttons, so the token never reaches github.com's page context.
@@ -12,7 +12,7 @@ const loadLinks = async (url) => {
     return {
       ok: true,
       pr: formatPrs([pr]),
-      stack: stack && { ...formatPrs(stack), count: stack.length },
+      stack: stack && { ...formatStack(stack), count: stack.prs.length },
     };
   } catch (error) {
     const needsToken = error instanceof GitHubError && [401, 403, 404].includes(error.status);

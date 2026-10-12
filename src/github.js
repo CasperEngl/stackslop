@@ -35,15 +35,15 @@ const toPr = (pr) => ({
   url: pr.html_url,
   additions: pr.additions,
   deletions: pr.deletions,
-  state: pr.merged_at ? "merged" : pr.state,
+  state: pr.merged_at ? "merged" : pr.state === "closed" ? "closed" : pr.draft ? "draft" : "open",
 });
 
 export const fetchPr = async ({ owner, repo, number }, token) =>
   toPr(await request(`/repos/${owner}/${repo}/pulls/${number}`, token));
 
 /**
- * Returns the open PRs of the GitHub stack containing the PR, top of the stack first,
- * or null when the PR isn't in a stack.
+ * Returns the GitHub stack containing the PR, as its trunk branch and its PRs top of the
+ * stack first, or null when the PR isn't in a stack.
  */
 export const fetchStack = async ({ owner, repo, number }, token) => {
   const stacks = await request(`/repos/${owner}/${repo}/stacks?pull_request=${number}`, token);
@@ -51,16 +51,17 @@ export const fetchStack = async ({ owner, repo, number }, token) => {
   if (!stack) return null;
 
   // The API lists PRs bottom first; Graphite pastes the top of the stack first.
-  const open = stack.pull_requests.filter((pr) => pr.state === "open").reverse();
-  return Promise.all(open.map((pr) => fetchPr({ owner, repo, number: pr.number }, token)));
+  const numbers = stack.pull_requests.map((pr) => pr.number).reverse();
+  const prs = await Promise.all(numbers.map((n) => fetchPr({ owner, repo, number: n }, token)));
+  return { trunk: stack.base.ref, prs };
 };
 
-/** Loads the PR and, when it sits in a stack of two or more open PRs, that stack. */
+/** Loads the PR and, when it sits in a stack of two or more PRs, that stack. */
 export const fetchPrWithStack = async (ref, token) => {
   const [pr, stack] = await Promise.all([
     fetchPr(ref, token),
     // A missing stack must not block copying the PR itself.
     fetchStack(ref, token).catch(() => null),
   ]);
-  return { pr, stack: stack !== null && stack.length > 1 ? stack : null };
+  return { pr, stack: stack !== null && stack.prs.length > 1 ? stack : null };
 };

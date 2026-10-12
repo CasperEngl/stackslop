@@ -1,4 +1,4 @@
-import { diffStat, formatPrs } from "./format.js";
+import { STATES, diffStat, formatPrs, formatStack } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 const status = document.getElementById("status");
@@ -22,28 +22,35 @@ const showStatus = (message, { optionsLink = false } = {}) => {
   status.hidden = false;
 };
 
-const renderPreview = (prs, currentNumber) => {
-  preview.replaceChildren(
-    ...prs.map((pr) => {
-      const item = document.createElement("li");
-      if (pr.number === currentNumber) item.className = "current";
-      const title = document.createElement("span");
-      title.textContent = `#${pr.number} ${pr.title}`;
-      const stat = document.createElement("code");
-      stat.textContent = diffStat(pr);
-      item.append(title, " ", stat);
-      return item;
-    }),
-  );
+const renderPreview = (pr, stack) => {
+  const items = (stack?.prs ?? [pr]).map((stackPr) => {
+    const item = document.createElement("li");
+    if (stackPr.number === pr.number) item.className = "current";
+    const title = document.createElement("span");
+    title.textContent = `#${stackPr.number} ${stackPr.title}`;
+    const stat = document.createElement("code");
+    stat.textContent = diffStat(stackPr);
+    if (stack) item.append(`${STATES[stackPr.state].icon} `);
+    item.append(title, " ", stat);
+    if (stack && STATES[stackPr.state].label) item.append(" ", STATES[stackPr.state].label);
+    return item;
+  });
+  if (stack) {
+    const trunk = document.createElement("li");
+    const branch = document.createElement("code");
+    branch.textContent = stack.trunk;
+    trunk.append("↳ ", branch);
+    items.push(trunk);
+  }
+  preview.replaceChildren(...items);
   preview.hidden = false;
 };
 
 let copied = false;
 
-const copy = async (prs) => {
+const copy = async ({ html, text }, count) => {
   if (copied) return;
   copied = true;
-  const { html, text } = formatPrs(prs);
   try {
     await navigator.clipboard.write([
       new ClipboardItem({
@@ -57,7 +64,7 @@ const copy = async (prs) => {
     return;
   }
   actions.hidden = true;
-  showStatus(prs.length === 1 ? "Copied PR link" : `Copied ${prs.length} PR links`);
+  showStatus(count === 1 ? "Copied PR link" : `Copied ${count} PR links`);
   setTimeout(() => window.close(), 700);
 };
 
@@ -80,19 +87,21 @@ const main = async () => {
   const { pr, stack } = await fetchPrWithStack(ref, token);
 
   const hasStack = stack !== null;
-  renderPreview(hasStack ? stack : [pr], pr.number);
+  renderPreview(pr, stack);
   status.hidden = true;
   actions.hidden = false;
   copyStackButton.hidden = !hasStack;
-  if (hasStack) copyStackButton.firstChild.textContent = `Copy stack (${stack.length}) `;
+  if (hasStack) copyStackButton.firstChild.textContent = `Copy stack (${stack.prs.length}) `;
 
-  copyPrButton.addEventListener("click", () => copy([pr]));
-  copyStackButton.addEventListener("click", () => copy(stack));
+  const copyPr = () => copy(formatPrs([pr]), 1);
+  const copyStack = () => copy(formatStack(stack), stack.prs.length);
+  copyPrButton.addEventListener("click", copyPr);
+  copyStackButton.addEventListener("click", copyStack);
   document.addEventListener("keydown", (event) => {
     // A focused button handles its own Enter through the click listener.
     if (event.target instanceof HTMLButtonElement) return;
-    if (event.key === "Enter") copy([pr]);
-    if (hasStack && event.key.toLowerCase() === "s") copy(stack);
+    if (event.key === "Enter") copyPr();
+    if (hasStack && event.key.toLowerCase() === "s") copyStack();
   });
 };
 
