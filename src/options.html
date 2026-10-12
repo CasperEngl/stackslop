@@ -6,28 +6,52 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="options">
-    <h1>PR Link Copier</h1>
-    <form id="form">
-      <label for="token">GitHub token</label>
-      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_… or gho_…" />
-      <p class="hint">
-        Needs read access to pull requests in your private repos. The quickest one is your GitHub
-        CLI token: run <code>gh auth token | pbcopy</code> and paste it here. It's stored only in
-        this browser.
-      </p>
-      <fieldset>
-        <legend>Copied links open in</legend>
-        <label class="choice"><input type="radio" name="linkTarget" value="github" checked /> GitHub</label>
-        <label class="choice"><input type="radio" name="linkTarget" value="linear" /> Linear Reviews</label>
-        <p class="hint">
-          Linear links come from the "Review in Linear" comment Linear's bot leaves on linked PRs.
-          A PR without one keeps its GitHub link, and <kbd>C</kbd> then <kbd>G</kbd> always copies
-          the GitHub link.
-        </p>
-      </fieldset>
-      <button type="submit">Save</button>
-      <span id="saved" class="saved" hidden>Saved</span>
-    </form>
+    <main>
+      <header>
+        <h1>PR Link Copier</h1>
+        <p>Copy GitHub pull requests with their title and diff stat, one at a time or as a stack.</p>
+      </header>
+
+      <form id="form">
+        <section class="field">
+          <div class="field-head">
+            <label for="token">GitHub token</label>
+            <span id="saved" class="saved" role="status"></span>
+          </div>
+          <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a token" />
+          <p class="hint">
+            Needed for private repos. Run <code>gh auth token | pbcopy</code> and paste the result. It stays in
+            this browser.
+          </p>
+        </section>
+
+        <section class="field">
+          <div class="field-head">
+            <span class="label" id="target-label">Links point to</span>
+          </div>
+          <div class="segmented" role="radiogroup" aria-labelledby="target-label">
+            <label><input type="radio" name="linkTarget" value="github" checked /><span>GitHub</span></label>
+            <label><input type="radio" name="linkTarget" value="linear" /><span>Linear Reviews</span></label>
+          </div>
+          <p class="hint">
+            Linear links come from the “Review in Linear” comment on each PR. PRs without one keep their GitHub link.
+          </p>
+        </section>
+      </form>
+
+      <section class="field">
+        <div class="field-head"><span class="label">Shortcuts on a pull request</span></div>
+        <dl class="shortcuts">
+          <div><dt><kbd>C</kbd><kbd>P</kbd></dt><dd>PR with title and diff stat</dd></div>
+          <div><dt><kbd>C</kbd><kbd>S</kbd></dt><dd>Whole stack</dd></div>
+          <div><dt><kbd>C</kbd><kbd>L</kbd></dt><dd>Link</dd></div>
+          <div><dt><kbd>C</kbd><kbd>G</kbd></dt><dd>GitHub link</dd></div>
+          <div><dt><kbd>C</kbd><kbd>T</kbd></dt><dd>Title</dd></div>
+          <div><dt><kbd>C</kbd><kbd>B</kbd></dt><dd>Branch name</dd></div>
+          <div><dt><kbd>C</kbd><kbd>C</kbd></dt><dd>Checkout command</dd></div>
+        </dl>
+      </section>
+    </main>
     <script type="module" src="options.js"></script>
   </body>
 </html>

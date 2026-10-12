@@ -1,4 +1,4 @@
-import { STATES, diffStat, formatPrs, formatStack, stackNote } from "./format.js";
+import { formatPrs, formatStack, stackNote } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 const status = document.getElementById("status");
@@ -9,6 +9,7 @@ const copyStackButton = document.getElementById("copy-stack");
 
 const showStatus = (message, { optionsLink = false } = {}) => {
   status.textContent = message;
+  status.classList.toggle("error", optionsLink);
   if (optionsLink) {
     const link = document.createElement("a");
     link.href = "#";
@@ -22,33 +23,43 @@ const showStatus = (message, { optionsLink = false } = {}) => {
   status.hidden = false;
 };
 
+const element = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
+const renderRow = (pr, { current, note }) => {
+  const row = element("li", `row state-${pr.state}${current ? " current" : ""}`);
+  const title = element("span", "title");
+  title.append(element("span", "number", `#${pr.number}`), ` ${pr.title}`);
+  title.title = pr.title;
+  const diff = element("span", "diff");
+  diff.append(element("span", "additions", `+${pr.additions}`), element("span", "deletions", `−${pr.deletions}`));
+  row.append(element("span", "dot"), title);
+  if (note) row.append(element("span", `note note-${note.replace(" ", "-")}`, note));
+  row.append(diff);
+  return row;
+};
+
 const renderPreview = (pr, stack) => {
-  const items = (stack?.prs ?? [pr]).map((stackPr) => {
-    const item = document.createElement("li");
-    if (stackPr.number === pr.number) item.className = "current";
-    const title = document.createElement("span");
-    title.textContent = `#${stackPr.number} ${stackPr.title}`;
-    const stat = document.createElement("code");
-    stat.textContent = diffStat(stackPr);
-    if (stack) item.append(`${STATES[stackPr.state].icon} `);
-    item.append(title, " ", stat);
-    if (stack && stackNote(stackPr)) item.append(" ", stackNote(stackPr));
-    return item;
-  });
+  const rows = stack
+    ? stack.prs.map((stackPr) => renderRow(stackPr, { current: stackPr.number === pr.number, note: stackNote(stackPr) }))
+    : [renderRow(pr, {})];
   if (stack) {
-    const trunk = document.createElement("li");
-    const branch = document.createElement("code");
-    branch.textContent = stack.trunk;
-    trunk.append("└ ", branch);
-    items.push(trunk);
+    const trunk = element("li", "row trunk");
+    trunk.append(element("span", "dot"), element("span", "branch", stack.trunk));
+    rows.push(trunk);
   }
-  preview.replaceChildren(...items);
+  preview.classList.toggle("is-stack", Boolean(stack));
+  preview.replaceChildren(...rows);
   preview.hidden = false;
 };
 
 let copied = false;
 
-const copy = async ({ html, text }, count) => {
+const copy = async ({ html, text }, button) => {
   if (copied) return;
   copied = true;
   try {
@@ -63,9 +74,9 @@ const copy = async ({ html, text }, count) => {
     showStatus(`Couldn't copy: ${error.message}`);
     return;
   }
-  actions.hidden = true;
-  showStatus(count === 1 ? "Copied PR link" : `Copied ${count} PR links`);
-  setTimeout(() => window.close(), 700);
+  button.classList.add("copied");
+  button.firstElementChild.textContent = "Copied";
+  setTimeout(() => window.close(), 600);
 };
 
 const activeTabUrl = async () => {
@@ -91,10 +102,10 @@ const main = async () => {
   status.hidden = true;
   actions.hidden = false;
   copyStackButton.hidden = !hasStack;
-  if (hasStack) copyStackButton.firstChild.textContent = `Copy stack (${stack.prs.length}) `;
+  if (hasStack) copyStackButton.firstElementChild.textContent = `Copy stack of ${stack.prs.length}`;
 
-  const copyPr = () => copy(formatPrs([pr], linkTarget), 1);
-  const copyStack = () => copy(formatStack(stack, linkTarget), stack.prs.length);
+  const copyPr = () => copy(formatPrs([pr], linkTarget), copyPrButton);
+  const copyStack = () => copy(formatStack(stack, linkTarget), copyStackButton);
   copyPrButton.addEventListener("click", copyPr);
   copyStackButton.addEventListener("click", copyStack);
   document.addEventListener("keydown", (event) => {
@@ -108,7 +119,7 @@ const main = async () => {
 
 main().catch((error) => {
   if (error instanceof GitHubError && [401, 403, 404].includes(error.status)) {
-    showStatus(`GitHub said “${error.message}”. Private repos need a token.`, { optionsLink: true });
+    showStatus("GitHub couldn't find this PR. Private repos need a token.", { optionsLink: true });
     return;
   }
   showStatus(`Couldn't load the PR: ${error.message}`);
