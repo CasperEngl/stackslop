@@ -90,8 +90,9 @@ const SPOTS = {
     return titleArea ? { parent: titleArea } : { parent: title.parentElement, after: title };
   },
   "merge-box": () => {
+    // The test id is stable; GitHub's hashed CSS module class names change between builds.
     const mergeButtons = document.querySelector(
-      '[class*="MergeBox-module__mergePartialContainer"] [data-component="ButtonGroup"]',
+      '[data-testid="mergebox-border-container"] [data-component="ButtonGroup"]',
     );
     return mergeButtons && { parent: mergeButtons.parentElement, after: mergeButtons };
   },
