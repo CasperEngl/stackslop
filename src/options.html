@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>PR Link Copier options</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="options">
+    <h1>PR Link Copier</h1>
+    <form id="form">
+      <label for="token">GitHub token</label>
+      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_… or gho_…" />
+      <p class="hint">
+        Needs read access to pull requests in your private repos. The quickest one is your GitHub
+        CLI token: run <code>gh auth token | pbcopy</code> and paste it here. It's stored only in
+        this browser.
+      </p>
+      <button type="submit">Save</button>
+      <span id="saved" class="saved" hidden>Saved</span>
+    </form>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

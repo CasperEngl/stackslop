@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "PR Link Copier",
+  "version": "1.0.0",
+  "description": "Copy GitHub pull request links with their title and +/- line counts, Graphite style.",
+  "action": {
+    "default_title": "Copy PR link",
+    "default_popup": "src/popup.html"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+C", "mac": "Alt+Shift+C" },
+      "description": "Open PR Link Copier"
+    }
+  },
+  "options_page": "src/options.html",
+  "permissions": ["activeTab", "clipboardWrite", "storage"],
+  "host_permissions": ["https://api.github.com/*"]
+}

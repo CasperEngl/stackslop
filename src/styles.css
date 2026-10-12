@@ -1,0 +1,127 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --bg: #ffffff;
+  --border: #d1d9e0;
+  --accent: #0969da;
+  --current: #ddf4ff;
+  --code: #d1242f;
+  --code-bg: #f6f8fa;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #f0f6fc;
+    --muted: #9198a1;
+    --bg: #0d1117;
+    --border: #3d444d;
+    --accent: #4493f8;
+    --current: #121d2f;
+    --code: #ff7b72;
+    --code-bg: #151b23;
+  }
+}
+
+body {
+  margin: 0;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--code);
+  font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+}
+
+button {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--code-bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+kbd {
+  margin-left: 4px;
+  color: var(--muted);
+  font: 11px ui-monospace, Menlo, monospace;
+}
+
+.popup {
+  width: 420px;
+  padding: 12px;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.preview {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.preview li {
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.preview li.current {
+  background: var(--current);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.options {
+  max-width: 520px;
+  padding: 24px;
+}
+
+.options label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.options input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px ui-monospace, Menlo, monospace;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.saved {
+  margin-left: 8px;
+  color: var(--muted);
+}
