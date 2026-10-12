@@ -1,11 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f5df0"/><stop offset="1" stop-color="#6b3fd4"/></linearGradient></defs>
-  <rect x="16" y="16" width="96" height="96" rx="24" fill="url(#g)"/>
-  <line x1="44" y1="42" x2="44" y2="86" stroke="#ffffff" stroke-opacity="0.5" stroke-width="4"/>
-  <circle cx="44" cy="42" r="7" fill="#8f5df0" stroke="#ffffff" stroke-width="4"/>
-  <circle cx="44" cy="64" r="8" fill="#ffffff"/>
-  <circle cx="44" cy="86" r="8" fill="#ffffff"/>
-  <rect x="60" y="38" width="30" height="8" rx="4" fill="#ffffff" fill-opacity="0.6"/>
-  <rect x="60" y="60" width="24" height="8" rx="4" fill="#ffffff"/>
-  <rect x="60" y="82" width="28" height="8" rx="4" fill="#ffffff"/>
+  <defs>
+    <linearGradient id="slime" x1="0" y1="16" x2="0" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9a6bff"/>
+      <stop offset="0.6" stop-color="#7a45e6"/>
+      <stop offset="1" stop-color="#5b2fc4"/>
+    </linearGradient>
+    <filter id="goo" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo"/>
+      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+    </filter>
+  </defs>
+  <g filter="url(#goo)" fill="url(#slime)">
+    <rect x="16" y="16" width="96" height="74" rx="24"/>
+    <rect x="28" y="80" width="13" height="26" rx="6.5"/>
+    <circle cx="34.5" cy="106" r="7.5"/>
+    <rect x="62" y="80" width="10" height="16" rx="5"/>
+    <circle cx="67" cy="96" r="6"/>
+    <rect x="88" y="80" width="11" height="22" rx="5.5"/>
+    <circle cx="93.5" cy="102" r="6.5"/>
+  </g>
+  <circle cx="67" cy="110" r="2.4" fill="#7a45e6"/>
+  <ellipse cx="38" cy="30" rx="15" ry="6" fill="#ffffff" fill-opacity="0.28" transform="rotate(-18 38 30)"/>
+  <circle cx="57" cy="24" r="2.4" fill="#ffffff" fill-opacity="0.35"/>
+  <path d="M41 34 Q37 46 42 54 Q46 63 40 72" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="41" cy="34" r="6.5" fill="#8a58f5" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="43" cy="53" r="7.5" fill="#ffffff"/>
+  <circle cx="40" cy="72" r="7.5" fill="#ffffff"/>
+  <rect x="55" y="30" width="31" height="8" rx="4" fill="#ffffff" fill-opacity="0.6" transform="rotate(-6 70 34)"/>
+  <rect x="58" y="49" width="25" height="8" rx="4" fill="#ffffff" transform="rotate(5 70 53)"/>
+  <rect x="54" y="68" width="30" height="8" rx="4" fill="#ffffff" transform="rotate(-3 69 72)"/>
 </svg>
