@@ -1,4 +1,4 @@
-.prlc-actions {
+.stackslop-actions {
   display: inline-flex;
   flex-wrap: nowrap;
   gap: 8px;
@@ -8,11 +8,11 @@
   margin-inline-start: 8px;
 }
 
-.prlc-actions[data-size="medium"] {
+.stackslop-actions[data-size="medium"] {
   margin: 0;
 }
 
-.prlc-button {
+.stackslop-button {
   display: inline-flex;
   gap: 6px;
   align-items: center;
@@ -27,39 +27,39 @@
   cursor: pointer;
 }
 
-.prlc-button[hidden] {
+.stackslop-button[hidden] {
   display: none;
 }
 
-.prlc-button:hover {
+.stackslop-button:hover {
   background: var(--button-default-bgColor-hover, var(--bgColor-neutral-muted, #eff2f5));
 }
 
-.prlc-button:focus-visible {
+.stackslop-button:focus-visible {
   outline: 2px solid var(--focus-outlineColor, #0969da);
   outline-offset: -2px;
 }
 
-.prlc-button svg {
+.stackslop-button svg {
   color: var(--fgColor-muted, #59636e);
 }
 
 /* Match GitHub's medium buttons in the header actions and the merge box. */
-.prlc-actions[data-size="medium"] .prlc-button {
+.stackslop-actions[data-size="medium"] .stackslop-button {
   height: 32px;
   padding: 0 12px;
   font-size: 14px;
 }
 
-.prlc-button[data-outcome="copied"] svg {
+.stackslop-button[data-outcome="copied"] svg {
   color: var(--fgColor-success, #1a7f37);
 }
 
-.prlc-button[data-outcome="failed"] svg {
+.stackslop-button[data-outcome="failed"] svg {
   color: var(--fgColor-danger, #d1242f);
 }
 
-.prlc-toast {
+.stackslop-toast {
   position: fixed;
   z-index: 2147483647;
   bottom: 24px;
@@ -78,10 +78,10 @@
 }
 
 /* The toast is always dark, so use the dark-theme success and danger colors. */
-.prlc-toast[data-outcome="copied"] svg {
+.stackslop-toast[data-outcome="copied"] svg {
   color: #3fb950;
 }
 
-.prlc-toast[data-outcome="failed"] svg {
+.stackslop-toast[data-outcome="failed"] svg {
   color: #f85149;
 }

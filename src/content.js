@@ -47,7 +47,7 @@ const KINDS = {
 const createButton = (kind, label) => {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "prlc-button";
+  button.className = "stackslop-button";
   button.dataset.kind = kind;
   button.setAttribute("aria-keyshortcuts", `c ${KINDS[kind].keys[0]}`);
   button.innerHTML = `${COPY_ICON}<span></span>`;
@@ -72,8 +72,8 @@ let toastTimer;
 
 // Shortcuts have no button to flash, so they report in a short toast instead.
 const toast = (outcome, message) => {
-  const element = document.querySelector(".prlc-toast") ?? document.createElement("div");
-  element.className = "prlc-toast";
+  const element = document.querySelector(".stackslop-toast") ?? document.createElement("div");
+  element.className = "stackslop-toast";
   element.setAttribute("role", "status");
   element.dataset.outcome = outcome;
   element.innerHTML = outcome === "copied" ? CHECK_ICON : X_ICON;
@@ -109,7 +109,7 @@ const copy = (kind, links, notify) => {
 
 const render = (url, name, spot) => {
   const container = document.createElement("span");
-  container.className = "prlc-actions";
+  container.className = "stackslop-actions";
   container.dataset.url = url;
   container.dataset.spot = name;
   container.dataset.size = spot.size;
@@ -138,7 +138,7 @@ const SPOTS = {
   header: () => {
     // Signed in, GitHub's own header buttons sit here; sit with them at their size.
     const actions = document.querySelector('[data-component="PH_Actions"]');
-    const hasGitHubButtons = [...(actions?.children ?? [])].some((child) => !child.matches(".prlc-actions"));
+    const hasGitHubButtons = [...(actions?.children ?? [])].some((child) => !child.matches(".stackslop-actions"));
     if (actions && !actions.classList.contains("d-none") && hasGitHubButtons) {
       return { parent: actions, first: true, size: "medium" };
     }
@@ -180,7 +180,7 @@ const sync = () => {
   const url = currentPrUrl();
 
   for (const [name, find] of Object.entries(SPOTS)) {
-    const existing = document.querySelector(`.prlc-actions[data-spot="${name}"]`);
+    const existing = document.querySelector(`.stackslop-actions[data-spot="${name}"]`);
     const spot = url && find();
     const current = existing && spot && existing.dataset.url === url && existing.dataset.size === spot.size;
     // Only touch the DOM when something changed, or the observer would loop.

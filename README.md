@@ -1,4 +1,4 @@
-# PR Link Copier
+# Stackslop
 
 Copies GitHub pull request links the way Graphite does: `#4377 Title` as a link, followed
 by the diff stat `+352/-54` as inline code. Slack and other rich editors get HTML;

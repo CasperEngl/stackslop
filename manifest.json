@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PR Link Copier",
+  "name": "Stackslop",
   "version": "1.1.0",
   "description": "Copy GitHub pull request links with their title and +/- line counts, Graphite style.",
   "action": {
@@ -13,7 +13,7 @@
         "default": "Alt+Shift+C",
         "mac": "Alt+Shift+C"
       },
-      "description": "Open PR Link Copier"
+      "description": "Open Stackslop"
     }
   },
   "options_page": "src/options.html",
