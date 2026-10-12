@@ -36,3 +36,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message.type === "open-options") chrome.runtime.openOptionsPage();
 });
+
+// First install opens the options, since private repos need a token before anything works.
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === "install") chrome.runtime.openOptionsPage();
+});
