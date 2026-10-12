@@ -33,6 +33,7 @@ const toPr = (pr) => ({
   number: pr.number,
   title: pr.title,
   url: pr.html_url,
+  branch: pr.head.ref,
   additions: pr.additions,
   deletions: pr.deletions,
   state: pr.merged_at ? "merged" : pr.state === "closed" ? "closed" : pr.draft ? "draft" : "open",

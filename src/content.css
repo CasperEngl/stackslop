@@ -58,3 +58,30 @@
 .prlc-button[data-outcome="failed"] svg {
   color: var(--fgColor-danger, #d1242f);
 }
+
+.prlc-toast {
+  position: fixed;
+  z-index: 2147483647;
+  bottom: 24px;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: var(--bgColor-emphasis, #25292e);
+  color: var(--fgColor-onEmphasis, #ffffff);
+  font: 500 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  box-shadow: var(--shadow-floating-large, 0 8px 24px rgb(0 0 0 / 0.2));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* The toast is always dark, so use the dark-theme success and danger colors. */
+.prlc-toast[data-outcome="copied"] svg {
+  color: #3fb950;
+}
+
+.prlc-toast[data-outcome="failed"] svg {
+  color: #f85149;
+}

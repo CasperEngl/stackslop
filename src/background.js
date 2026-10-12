@@ -13,6 +13,14 @@ const loadLinks = async (url) => {
       ok: true,
       pr: formatPrs([pr]),
       stack: stack && { ...formatStack(stack), count: stack.prs.length },
+      plain: {
+        link: pr.url,
+        title: pr.title,
+        branch: pr.branch,
+        // Stacked PRs check out with their whole stack. gh stack reads a bare number as a
+        // stack number first, so pass the URL.
+        checkout: stack ? `gh stack checkout ${pr.url}` : `gh pr checkout ${pr.number}`,
+      },
     };
   } catch (error) {
     const needsToken = error instanceof GitHubError && [401, 403, 404].includes(error.status);

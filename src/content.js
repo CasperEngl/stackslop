@@ -28,10 +28,15 @@ const loadLinks = (url) => {
   return links;
 };
 
-// What each button copies, and its Graphite shortcut (C then the key).
+// What each kind copies, as rich HTML plus Markdown or as plain text, and its Graphite
+// shortcut keys (C then the key).
 const KINDS = {
-  pr: { key: "p", pick: (result) => result.pr },
-  stack: { key: "s", pick: (result) => result.stack },
+  pr: { keys: ["p"], rich: true, name: "PR", pick: (result) => result.pr },
+  stack: { keys: ["s"], rich: true, name: "stack", pick: (result) => result.stack },
+  link: { keys: ["l", "g"], name: "link", pick: (result) => result.plain.link },
+  title: { keys: ["t"], name: "title", pick: (result) => result.plain.title },
+  branch: { keys: ["b"], name: "branch name", pick: (result) => result.plain.branch },
+  checkout: { keys: ["c"], name: "checkout command", pick: (result) => result.plain.checkout },
 };
 
 const createButton = (kind, label) => {
@@ -39,7 +44,7 @@ const createButton = (kind, label) => {
   button.type = "button";
   button.className = "prlc-button";
   button.dataset.kind = kind;
-  button.setAttribute("aria-keyshortcuts", `c ${KINDS[kind].key}`);
+  button.setAttribute("aria-keyshortcuts", `c ${KINDS[kind].keys[0]}`);
   button.innerHTML = `${COPY_ICON}<span></span>`;
   button.lastChild.textContent = label;
   return button;
@@ -58,24 +63,42 @@ const flash = (button, outcome, message) => {
   }, 1500);
 };
 
-/** Copies one kind of link. `button`, when given, shows the outcome. */
-const copy = (kind, links, button) => {
+let toastTimer;
+
+// Shortcuts have no button to flash, so they report in a short toast instead.
+const toast = (outcome, message) => {
+  const element = document.querySelector(".prlc-toast") ?? document.createElement("div");
+  element.className = "prlc-toast";
+  element.setAttribute("role", "status");
+  element.dataset.outcome = outcome;
+  element.innerHTML = outcome === "copied" ? CHECK_ICON : X_ICON;
+  element.append(message);
+  if (!element.isConnected) document.body.append(element);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => element.remove(), 2000);
+};
+
+/** Copies one kind of link, then calls `notify(outcome, message)`. */
+const copy = (kind, links, notify) => {
+  const { rich, name, pick } = KINDS[kind];
   // Handing ClipboardItem promises keeps the user activation while the PR loads.
   const payload = links.then((result) => {
     if (!result.ok) throw Object.assign(new Error(result.message), { needsToken: result.needsToken });
-    const value = KINDS[kind].pick(result);
+    const value = pick(result);
     if (!value) throw new Error("this PR isn't in a stack");
-    return value;
+    return rich ? value : { text: value };
   });
   const blob = (type, key) => payload.then((value) => new Blob([value[key]], { type }));
+  const types = { "text/plain": blob("text/plain", "text") };
+  if (rich) types["text/html"] = blob("text/html", "html");
 
   navigator.clipboard
-    .write([new ClipboardItem({ "text/html": blob("text/html", "html"), "text/plain": blob("text/plain", "text") })])
-    .then(() => button && flash(button, "copied", "Copied"))
+    .write([new ClipboardItem(types)])
+    .then(() => notify("copied", `Copied ${name}`))
     .catch(async (writeError) => {
       const error = (await payload.then(() => null, (loadError) => loadError)) ?? writeError;
       if (error.needsToken) chrome.runtime.sendMessage({ type: "open-options" });
-      else if (button) flash(button, "failed", `Couldn't copy: ${error.message}`);
+      else notify("failed", `Couldn't copy ${name}: ${error.message}`);
     });
 };
 
@@ -100,8 +123,8 @@ const render = (url, name, spot) => {
     if (result.needsToken) prButton.title = "GitHub needs a token for this repo. Click to add one.";
   });
 
-  prButton.addEventListener("click", () => copy("pr", links, prButton));
-  stackButton.addEventListener("click", () => copy("stack", links, stackButton));
+  prButton.addEventListener("click", () => copy("pr", links, (...args) => flash(prButton, ...args)));
+  stackButton.addEventListener("click", () => copy("stack", links, (...args) => flash(stackButton, ...args)));
   return container;
 };
 
@@ -177,8 +200,8 @@ new MutationObserver(() => {
 }).observe(document.documentElement, { childList: true, subtree: true });
 sync();
 
-// Graphite's shortcuts: C then P copies the PR, C then S its stack. The C still reaches
-// GitHub, which uses it on the Files tab; only the second key is ours.
+// Graphite's shortcuts: C, then the key a kind lists. The first C still reaches GitHub,
+// which uses it on the Files tab; only the second key is ours.
 const SHORTCUT_WINDOW_MS = 1500;
 let pressedC = 0;
 
@@ -193,15 +216,15 @@ window.addEventListener(
 
     const key = event.key.toLowerCase();
     const afterC = Date.now() - pressedC < SHORTCUT_WINDOW_MS;
-    pressedC = key === "c" ? Date.now() : 0;
-    const kind = Object.keys(KINDS).find((k) => KINDS[k].key === key);
+    const kind = afterC && Object.keys(KINDS).find((k) => KINDS[k].keys.includes(key));
     const url = currentPrUrl();
-    if (!afterC || !kind || !url) return;
+    // A completed shortcut ends the sequence, so C then C doesn't arm a third key.
+    pressedC = key === "c" && !kind ? Date.now() : 0;
+    if (!kind || !url) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
-    const button = document.querySelector(`.prlc-actions[data-spot="header"] .prlc-button[data-kind="${kind}"]`);
-    copy(kind, loadLinks(url), button);
+    copy(kind, loadLinks(url), toast);
   },
   // Capture on window runs before GitHub's own key handlers.
   true,

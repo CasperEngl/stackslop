@@ -14,8 +14,16 @@ plain-text targets get Markdown.
 ## Use
 
 On a pull request page, click **Copy link** or **Copy stack** in the header or next to
-the merge button. Graphite's shortcuts work too: <kbd>C</kbd> then <kbd>P</kbd> copies
-the PR, and <kbd>C</kbd> then <kbd>S</kbd> copies its stack.
+the merge button. Graphite's shortcuts work too, as <kbd>C</kbd> then:
+
+| Key | Copies |
+| --- | --- |
+| <kbd>P</kbd> | the PR as a rich link with its diff stat |
+| <kbd>S</kbd> | its stack |
+| <kbd>L</kbd> or <kbd>G</kbd> | the plain PR URL |
+| <kbd>T</kbd> | the title |
+| <kbd>B</kbd> | the branch name |
+| <kbd>C</kbd> | `gh stack checkout <PR URL>`, or `gh pr checkout <number>` outside a stack |
 
 Or click the toolbar icon (or press <kbd>⌥⇧C</kbd>), then:
 
