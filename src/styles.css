@@ -125,3 +125,23 @@ kbd {
   margin-left: 8px;
   color: var(--muted);
 }
+
+.options fieldset {
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+}
+
+.options legend {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.options label.choice {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-right: 16px;
+  font-weight: 400;
+  white-space: nowrap;
+}

@@ -1,4 +1,4 @@
-import { formatPrs, formatStack } from "./format.js";
+import { formatPrs, formatStack, linkFor } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 // Fetches for the in-page buttons, so the token never reaches github.com's page context.
@@ -6,15 +6,16 @@ const loadLinks = async (url) => {
   const ref = parsePrUrl(url);
   if (!ref) return { ok: false, message: "Not a pull request" };
 
-  const { token } = await chrome.storage.local.get("token");
+  const { token, linkTarget } = await chrome.storage.local.get(["token", "linkTarget"]);
   try {
     const { pr, stack } = await fetchPrWithStack(ref, token);
     return {
       ok: true,
-      pr: formatPrs([pr]),
-      stack: stack && { ...formatStack(stack), count: stack.prs.length },
+      pr: formatPrs([pr], linkTarget),
+      stack: stack && { ...formatStack(stack, linkTarget), count: stack.prs.length },
       plain: {
-        link: pr.url,
+        link: linkFor(pr, linkTarget),
+        github: pr.url,
         title: pr.title,
         branch: pr.branch,
         // Stacked PRs check out with their whole stack. gh stack reads a bare number as a

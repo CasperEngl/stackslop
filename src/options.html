@@ -15,6 +15,16 @@
         CLI token: run <code>gh auth token | pbcopy</code> and paste it here. It's stored only in
         this browser.
       </p>
+      <fieldset>
+        <legend>Copied links open in</legend>
+        <label class="choice"><input type="radio" name="linkTarget" value="github" checked /> GitHub</label>
+        <label class="choice"><input type="radio" name="linkTarget" value="linear" /> Linear Reviews</label>
+        <p class="hint">
+          Linear links come from the "Review in Linear" comment Linear's bot leaves on linked PRs.
+          A PR without one keeps its GitHub link, and <kbd>C</kbd> then <kbd>G</kbd> always copies
+          the GitHub link.
+        </p>
+      </fieldset>
       <button type="submit">Save</button>
       <span id="saved" class="saved" hidden>Saved</span>
     </form>

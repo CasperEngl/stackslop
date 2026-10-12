@@ -83,7 +83,7 @@ const main = async () => {
     return;
   }
 
-  const { token } = await chrome.storage.local.get("token");
+  const { token, linkTarget } = await chrome.storage.local.get(["token", "linkTarget"]);
   const { pr, stack } = await fetchPrWithStack(ref, token);
 
   const hasStack = stack !== null;
@@ -93,8 +93,8 @@ const main = async () => {
   copyStackButton.hidden = !hasStack;
   if (hasStack) copyStackButton.firstChild.textContent = `Copy stack (${stack.prs.length}) `;
 
-  const copyPr = () => copy(formatPrs([pr]), 1);
-  const copyStack = () => copy(formatStack(stack), stack.prs.length);
+  const copyPr = () => copy(formatPrs([pr], linkTarget), 1);
+  const copyStack = () => copy(formatStack(stack, linkTarget), stack.prs.length);
   copyPrButton.addEventListener("click", copyPr);
   copyStackButton.addEventListener("click", copyStack);
   document.addEventListener("keydown", (event) => {

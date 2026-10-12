@@ -19,30 +19,36 @@ export const stackNote = (pr) => STATES[pr.state].label ?? REVIEWS[pr.review] ??
 
 const label = (pr) => `#${pr.number} ${pr.title}`;
 
-const prHtml = (pr) =>
-  `<a href="${escapeHtml(pr.url)}">${escapeHtml(label(pr))}</a> <code>${diffStat(pr)}</code>`;
+/**
+ * Where copied links point: "github", or "linear" for Linear's review page, falling back
+ * to GitHub for a PR that Linear hasn't linked.
+ */
+export const linkFor = (pr, target) => (target === "linear" && pr.linearUrl) || pr.url;
 
-const prText = (pr) => `[${label(pr)}](${pr.url}) \`${diffStat(pr)}\``;
+const prHtml = (pr, target) =>
+  `<a href="${escapeHtml(linkFor(pr, target))}">${escapeHtml(label(pr))}</a> <code>${diffStat(pr)}</code>`;
+
+const prText = (pr, target) => `[${label(pr)}](${linkFor(pr, target)}) \`${diffStat(pr)}\``;
 
 /**
  * Builds the clipboard payload for PRs. Rich editors like Slack read the HTML (a link plus
  * an inline-code diff stat); plain-text targets get Markdown.
  */
-export const formatPrs = (prs) => ({
-  html: prs.map(prHtml).join("<br>"),
-  text: prs.map(prText).join("\n"),
+export const formatPrs = (prs, target) => ({
+  html: prs.map((pr) => prHtml(pr, target)).join("<br>"),
+  text: prs.map((pr) => prText(pr, target)).join("\n"),
 });
 
 /** Like formatPrs, with each PR's state and the trunk the stack merges into. */
-export const formatStack = ({ trunk, prs }) => {
+export const formatStack = ({ trunk, prs }, target) => {
   const suffix = (pr, wrap) => (stackNote(pr) ? ` ${wrap(stackNote(pr))}` : "");
   return {
     html: [
-      ...prs.map((pr) => `${STATES[pr.state].icon} ${prHtml(pr)}${suffix(pr, (l) => `<i>${l}</i>`)}`),
+      ...prs.map((pr) => `${STATES[pr.state].icon} ${prHtml(pr, target)}${suffix(pr, (l) => `<i>${l}</i>`)}`),
       `└ <code>${escapeHtml(trunk)}</code>`,
     ].join("<br>"),
     text: [
-      ...prs.map((pr) => `${STATES[pr.state].icon} ${prText(pr)}${suffix(pr, (l) => `_${l}_`)}`),
+      ...prs.map((pr) => `${STATES[pr.state].icon} ${prText(pr, target)}${suffix(pr, (l) => `_${l}_`)}`),
       `└ \`${trunk}\``,
     ].join("\n"),
   };

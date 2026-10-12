@@ -18,6 +18,9 @@ const CACHE_MS = 60_000;
 
 const cache = new Map();
 
+// A new token or link target changes every copy, so drop what's loaded.
+chrome.storage.onChanged.addListener(() => cache.clear());
+
 const loadLinks = (url) => {
   const cached = cache.get(url);
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.links;
@@ -33,7 +36,9 @@ const loadLinks = (url) => {
 const KINDS = {
   pr: { keys: ["p"], rich: true, name: "PR", pick: (result) => result.pr },
   stack: { keys: ["s"], rich: true, name: "stack", pick: (result) => result.stack },
-  link: { keys: ["l", "g"], name: "link", pick: (result) => result.plain.link },
+  // Like Graphite: L links to where you review (GitHub or Linear), G always to GitHub.
+  link: { keys: ["l"], name: "link", pick: (result) => result.plain.link },
+  github: { keys: ["g"], name: "GitHub link", pick: (result) => result.plain.github },
   title: { keys: ["t"], name: "title", pick: (result) => result.plain.title },
   branch: { keys: ["b"], name: "branch name", pick: (result) => result.plain.branch },
   checkout: { keys: ["c"], name: "checkout command", pick: (result) => result.plain.checkout },
