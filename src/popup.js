@@ -1,4 +1,4 @@
-import { STATES, diffStat, formatPrs, formatStack } from "./format.js";
+import { STATES, diffStat, formatPrs, formatStack, stackNote } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
 
 const status = document.getElementById("status");
@@ -32,7 +32,7 @@ const renderPreview = (pr, stack) => {
     stat.textContent = diffStat(stackPr);
     if (stack) item.append(`${STATES[stackPr.state].icon} `);
     item.append(title, " ", stat);
-    if (stack && STATES[stackPr.state].label) item.append(" ", STATES[stackPr.state].label);
+    if (stack && stackNote(stackPr)) item.append(" ", stackNote(stackPr));
     return item;
   });
   if (stack) {

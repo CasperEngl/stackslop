@@ -11,6 +11,12 @@ export const STATES = {
   closed: { icon: "✕", label: "closed" },
 };
 
+// Only "approved" and "changes requested" are worth a word; "review required" is the norm.
+const REVIEWS = { approved: "approved", changes_requested: "changes requested" };
+
+/** The word after a stacked PR: its state when not open, else its review decision. */
+export const stackNote = (pr) => STATES[pr.state].label ?? REVIEWS[pr.review] ?? null;
+
 const label = (pr) => `#${pr.number} ${pr.title}`;
 
 const prHtml = (pr) =>
@@ -29,7 +35,7 @@ export const formatPrs = (prs) => ({
 
 /** Like formatPrs, with each PR's state and the trunk the stack merges into. */
 export const formatStack = ({ trunk, prs }) => {
-  const suffix = (pr, wrap) => (STATES[pr.state].label ? ` ${wrap(STATES[pr.state].label)}` : "");
+  const suffix = (pr, wrap) => (stackNote(pr) ? ` ${wrap(stackNote(pr))}` : "");
   return {
     html: [
       ...prs.map((pr) => `${STATES[pr.state].icon} ${prHtml(pr)}${suffix(pr, (l) => `<i>${l}</i>`)}`),
