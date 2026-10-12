@@ -13,11 +13,13 @@ plain-text targets get Markdown.
 
 ## Use
 
-On a pull request page, click **Copy link** or **Copy stack** next to the title or the
-merge button.
+On a pull request page, click **Copy link** or **Copy stack** in the header or next to
+the merge button. Graphite's shortcuts work too: <kbd>C</kbd> then <kbd>P</kbd> copies
+the PR, and <kbd>C</kbd> then <kbd>S</kbd> copies its stack.
+
 Or click the toolbar icon (or press <kbd>⌥⇧C</kbd>), then:
 
-- <kbd>Enter</kbd> copies the PR.
+- <kbd>P</kbd> or <kbd>Enter</kbd> copies the PR.
 - <kbd>S</kbd> copies its whole stack: top of the stack first, each PR with its state
   (● ready for review, ○ draft, ✓ merged, ✕ closed) and, with a token, whether it's
   approved or has changes requested. The trunk branch comes last. The

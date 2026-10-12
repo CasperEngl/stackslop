@@ -100,8 +100,9 @@ const main = async () => {
   document.addEventListener("keydown", (event) => {
     // A focused button handles its own Enter through the click listener.
     if (event.target instanceof HTMLButtonElement) return;
-    if (event.key === "Enter") copyPr();
-    if (hasStack && event.key.toLowerCase() === "s") copyStack();
+    const key = event.key.toLowerCase();
+    if (key === "enter" || key === "p") copyPr();
+    if (hasStack && key === "s") copyStack();
   });
 };
 

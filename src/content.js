@@ -28,10 +28,18 @@ const loadLinks = (url) => {
   return links;
 };
 
-const createButton = (label) => {
+// What each button copies, and its Graphite shortcut (C then the key).
+const KINDS = {
+  pr: { key: "p", pick: (result) => result.pr },
+  stack: { key: "s", pick: (result) => result.stack },
+};
+
+const createButton = (kind, label) => {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "prlc-button";
+  button.dataset.kind = kind;
+  button.setAttribute("aria-keyshortcuts", `c ${KINDS[kind].key}`);
   button.innerHTML = `${COPY_ICON}<span></span>`;
   button.lastChild.textContent = label;
   return button;
@@ -50,21 +58,24 @@ const flash = (button, outcome, message) => {
   }, 1500);
 };
 
-const copy = (button, links, pick) => {
-  // Handing ClipboardItem promises keeps the click's user activation while the PR loads.
+/** Copies one kind of link. `button`, when given, shows the outcome. */
+const copy = (kind, links, button) => {
+  // Handing ClipboardItem promises keeps the user activation while the PR loads.
   const payload = links.then((result) => {
-    if (!result.ok) throw new Error(result.message);
-    return pick(result);
+    if (!result.ok) throw Object.assign(new Error(result.message), { needsToken: result.needsToken });
+    const value = KINDS[kind].pick(result);
+    if (!value) throw new Error("this PR isn't in a stack");
+    return value;
   });
   const blob = (type, key) => payload.then((value) => new Blob([value[key]], { type }));
 
   navigator.clipboard
     .write([new ClipboardItem({ "text/html": blob("text/html", "html"), "text/plain": blob("text/plain", "text") })])
-    .then(() => flash(button, "copied", "Copied"))
-    .catch(async () => {
-      const result = await links;
-      if (result.needsToken) chrome.runtime.sendMessage({ type: "open-options" });
-      else flash(button, "failed", `Couldn't copy: ${result.message ?? "clipboard unavailable"}`);
+    .then(() => button && flash(button, "copied", "Copied"))
+    .catch(async (writeError) => {
+      const error = (await payload.then(() => null, (loadError) => loadError)) ?? writeError;
+      if (error.needsToken) chrome.runtime.sendMessage({ type: "open-options" });
+      else if (button) flash(button, "failed", `Couldn't copy: ${error.message}`);
     });
 };
 
@@ -75,8 +86,8 @@ const render = (url, name, spot) => {
   container.dataset.spot = name;
   container.dataset.size = spot.size;
 
-  const prButton = createButton("Copy link");
-  const stackButton = createButton("Copy stack");
+  const prButton = createButton("pr", "Copy link");
+  const stackButton = createButton("stack", "Copy stack");
   stackButton.hidden = true;
   container.append(prButton, stackButton);
 
@@ -89,8 +100,8 @@ const render = (url, name, spot) => {
     if (result.needsToken) prButton.title = "GitHub needs a token for this repo. Click to add one.";
   });
 
-  prButton.addEventListener("click", () => copy(prButton, links, (result) => result.pr));
-  stackButton.addEventListener("click", () => copy(stackButton, links, (result) => result.stack));
+  prButton.addEventListener("click", () => copy("pr", links, prButton));
+  stackButton.addEventListener("click", () => copy("stack", links, stackButton));
   return container;
 };
 
@@ -131,10 +142,14 @@ const mount = (container, spot) => {
   else spot.parent.append(container);
 };
 
+const currentPrUrl = () => {
+  const match = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(location.pathname);
+  return match && `https://github.com/${match[1]}/${match[2]}/pull/${match[3]}`;
+};
+
 // GitHub navigates without page loads and re-renders parts of the page, so re-check on DOM changes.
 const sync = () => {
-  const match = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(location.pathname);
-  const url = match && `https://github.com/${match[1]}/${match[2]}/pull/${match[3]}`;
+  const url = currentPrUrl();
 
   for (const [name, find] of Object.entries(SPOTS)) {
     const existing = document.querySelector(`.prlc-actions[data-spot="${name}"]`);
@@ -161,3 +176,33 @@ new MutationObserver(() => {
   });
 }).observe(document.documentElement, { childList: true, subtree: true });
 sync();
+
+// Graphite's shortcuts: C then P copies the PR, C then S its stack. The C still reaches
+// GitHub, which uses it on the Files tab; only the second key is ours.
+const SHORTCUT_WINDOW_MS = 1500;
+let pressedC = 0;
+
+const isTyping = (target) =>
+  target instanceof Element && target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+
+window.addEventListener(
+  "keydown",
+  (event) => {
+    if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.repeat) return;
+    if (isTyping(event.target)) return;
+
+    const key = event.key.toLowerCase();
+    const afterC = Date.now() - pressedC < SHORTCUT_WINDOW_MS;
+    pressedC = key === "c" ? Date.now() : 0;
+    const kind = Object.keys(KINDS).find((k) => KINDS[k].key === key);
+    const url = currentPrUrl();
+    if (!afterC || !kind || !url) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const button = document.querySelector(`.prlc-actions[data-spot="header"] .prlc-button[data-kind="${kind}"]`);
+    copy(kind, loadLinks(url), button);
+  },
+  // Capture on window runs before GitHub's own key handlers.
+  true,
+);
