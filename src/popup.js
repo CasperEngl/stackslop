@@ -39,7 +39,7 @@ const renderPreview = (pr, stack) => {
     const trunk = document.createElement("li");
     const branch = document.createElement("code");
     branch.textContent = stack.trunk;
-    trunk.append("↳ ", branch);
+    trunk.append("└ ", branch);
     items.push(trunk);
   }
   preview.replaceChildren(...items);

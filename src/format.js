@@ -3,12 +3,12 @@ const escapeHtml = (text) =>
 
 export const diffStat = (pr) => `+${pr.additions}/-${pr.deletions}`;
 
-// GitHub's state colors: green open, grey draft, purple merged, red closed.
+// Text glyphs rather than emoji: they stay at text size in Slack, which drops colors anyway.
 export const STATES = {
-  open: { icon: "🟢", label: null },
-  draft: { icon: "⚪", label: "draft" },
-  merged: { icon: "🟣", label: "merged" },
-  closed: { icon: "🔴", label: "closed" },
+  open: { icon: "●", label: null },
+  draft: { icon: "○", label: "draft" },
+  merged: { icon: "✓", label: "merged" },
+  closed: { icon: "✕", label: "closed" },
 };
 
 const label = (pr) => `#${pr.number} ${pr.title}`;
@@ -33,11 +33,11 @@ export const formatStack = ({ trunk, prs }) => {
   return {
     html: [
       ...prs.map((pr) => `${STATES[pr.state].icon} ${prHtml(pr)}${suffix(pr, (l) => `<i>${l}</i>`)}`),
-      `↳ <code>${escapeHtml(trunk)}</code>`,
+      `└ <code>${escapeHtml(trunk)}</code>`,
     ].join("<br>"),
     text: [
       ...prs.map((pr) => `${STATES[pr.state].icon} ${prText(pr)}${suffix(pr, (l) => `_${l}_`)}`),
-      `↳ \`${trunk}\``,
+      `└ \`${trunk}\``,
     ].join("\n"),
   };
 };
