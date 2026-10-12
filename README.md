@@ -13,7 +13,8 @@ plain-text targets get Markdown.
 
 ## Use
 
-On a pull request page, click **Copy link** or **Copy stack** next to the title.
+On a pull request page, click **Copy link** or **Copy stack** next to the title or the
+merge button.
 Or click the toolbar icon (or press <kbd>⌥⇧C</kbd>), then:
 
 - <kbd>Enter</kbd> copies the PR.

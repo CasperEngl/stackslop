@@ -1,4 +1,5 @@
-// Adds "Copy link" and "Copy stack" buttons next to the title on GitHub PR pages.
+// Adds "Copy link" and "Copy stack" buttons to GitHub PR pages: next to the title, and
+// next to the merge button.
 
 const COPY_ICON =
   '<svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>';
@@ -54,10 +55,11 @@ const copy = (button, links, pick) => {
     });
 };
 
-const render = (url) => {
+const render = (url, spot) => {
   const container = document.createElement("span");
   container.className = "prlc-actions";
   container.dataset.url = url;
+  container.dataset.spot = spot;
 
   const prButton = createButton("Copy link");
   const stackButton = createButton("Copy stack");
@@ -78,26 +80,42 @@ const render = (url) => {
   return container;
 };
 
-// GitHub navigates without page loads and re-renders the header, so re-check on DOM changes.
+// Each spot says where its buttons go, or null when the page doesn't have it.
+const SPOTS = {
+  header: () => {
+    const title = document.querySelector(TITLE_SELECTOR);
+    if (!title) return null;
+    // The React header keeps the "#123" next to the title, so go after it.
+    const titleArea = title.closest('[data-component="TitleArea"]');
+    return titleArea ? { parent: titleArea } : { parent: title.parentElement, after: title };
+  },
+  "merge-box": () => {
+    const mergeButtons = document.querySelector(
+      '[class*="MergeBox-module__mergePartialContainer"] [data-component="ButtonGroup"]',
+    );
+    return mergeButtons && { parent: mergeButtons.parentElement, after: mergeButtons };
+  },
+};
+
+const isPlaced = (container, spot) =>
+  container.parentElement === spot.parent && (!spot.after || container.previousElementSibling === spot.after);
+
+// GitHub navigates without page loads and re-renders parts of the page, so re-check on DOM changes.
 const sync = () => {
   const match = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(location.pathname);
-  const existing = document.querySelector(".prlc-actions");
-  if (!match) {
+  const url = match && `https://github.com/${match[1]}/${match[2]}/pull/${match[3]}`;
+
+  for (const [name, find] of Object.entries(SPOTS)) {
+    const existing = document.querySelector(`.prlc-actions[data-spot="${name}"]`);
+    const spot = url && find();
+    if (existing && spot && existing.dataset.url === url && isPlaced(existing, spot)) continue;
+
     existing?.remove();
-    return;
+    if (!spot) continue;
+    const container = render(url, name);
+    if (spot.after) spot.after.after(container);
+    else spot.parent.append(container);
   }
-
-  const title = document.querySelector(TITLE_SELECTOR);
-  if (!title) return;
-  // The React header keeps the "#123" next to the title, so go after it.
-  const titleArea = title.closest('[data-component="TitleArea"]');
-  const url = `https://github.com/${match[1]}/${match[2]}/pull/${match[3]}`;
-  const placed = titleArea ? existing?.parentElement === titleArea : existing?.previousElementSibling === title;
-  if (existing?.dataset.url === url && placed) return;
-
-  existing?.remove();
-  if (titleArea) titleArea.append(render(url));
-  else title.after(render(url));
 };
 
 let scheduled = false;

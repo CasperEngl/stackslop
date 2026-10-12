@@ -8,6 +8,10 @@
   margin-inline-start: 8px;
 }
 
+.prlc-actions[data-spot="merge-box"] {
+  margin: 0;
+}
+
 .prlc-button {
   display: inline-flex;
   gap: 6px;
@@ -38,4 +42,11 @@
 
 .prlc-button svg {
   color: var(--fgColor-muted, #59636e);
+}
+
+/* Match the merge button's medium size. */
+.prlc-actions[data-spot="merge-box"] .prlc-button {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
 }
