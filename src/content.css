@@ -85,3 +85,8 @@
 .stackslop-toast[data-outcome="failed"] svg {
   color: #f85149;
 }
+
+/* The tab's other styles come from the classes it borrows from Files changed. */
+.stackslop-linear-tab svg {
+  vertical-align: text-bottom;
+}

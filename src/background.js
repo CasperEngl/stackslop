@@ -1,12 +1,24 @@
 import { formatPrs, formatStack, linkFor } from "./format.js";
 import { GitHubError, fetchPrWithStack, parsePrUrl } from "./github.js";
+import { fetchLinearWorkspaces, linearWorkspaceOf } from "./linear.js";
+
+/**
+ * The Linear review URL for the "View in Linear" tab, or null when the tab is off or the
+ * review is in a workspace this browser isn't signed in to.
+ */
+const linearTabUrlFor = async (linearUrl, linearTab) => {
+  if (!linearUrl || linearTab === "hide") return null;
+  // The tab is worth more than the check, so show it when Linear can't be asked.
+  const workspaces = await fetchLinearWorkspaces().catch(() => null);
+  return !workspaces || workspaces.includes(linearWorkspaceOf(linearUrl)) ? linearUrl : null;
+};
 
 // Fetches for the in-page buttons, so the token never reaches github.com's page context.
 const loadLinks = async (url) => {
   const ref = parsePrUrl(url);
   if (!ref) return { ok: false, message: "Not a pull request" };
 
-  const { token, linkTarget } = await chrome.storage.local.get(["token", "linkTarget"]);
+  const { token, linkTarget, linearTab } = await chrome.storage.local.get(["token", "linkTarget", "linearTab"]);
   try {
     const { pr, stack, stackFailed } = await fetchPrWithStack(ref, token);
     return {
@@ -14,6 +26,7 @@ const loadLinks = async (url) => {
       pr: formatPrs([pr], linkTarget),
       stack: stack && { ...formatStack(stack, linkTarget), count: stack.prs.length },
       stackFailed,
+      linearTabUrl: await linearTabUrlFor(pr.linearUrl, linearTab),
       plain: {
         link: linkFor(pr, linkTarget),
         github: pr.url,

@@ -1,5 +1,5 @@
 // Adds "Copy link" and "Copy stack" buttons to GitHub PR pages: in the header, and next
-// to the merge button.
+// to the merge button. A PR that Linear has linked also gets a "View in Linear" tab.
 
 const COPY_ICON =
   '<svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>';
@@ -11,14 +11,19 @@ const CHECK_ICON = svg(
 const X_ICON = svg(
   '<path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path>',
 );
+const LINEAR_ICON =
+  '<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M2.886 4.18A11.982 11.982 0 0 1 11.99 0C18.624 0 24 5.376 24 12.009c0 3.64-1.62 6.903-4.18 9.105L2.887 4.18ZM1.817 5.626l16.556 16.556c-.524.33-1.075.62-1.65.866L.951 7.277c.247-.575.537-1.126.866-1.65ZM.322 9.163l14.515 14.515c-.71.172-1.443.282-2.195.322L0 11.358a12 12 0 0 1 .322-2.195Zm-.17 4.862 9.823 9.824a12.02 12.02 0 0 1-9.824-9.824Z"></path></svg>';
 
 // The React PR header first, then the classic one.
 const TITLE_SELECTOR = 'h1[data-component="PH_Title"], .gh-header-title';
+const FILES_TAB_SELECTOR = '#prs-files-anchor-tab, .tabnav-tabs a[href$="/files"]';
 const CACHE_MS = 60_000;
 const RETRY_MS = 2000;
 const MAX_RETRIES = 3;
 
 const cache = new Map();
+// Each loaded PR's Linear review URL, or null when Linear hasn't linked it or the tab is off.
+const linearUrls = new Map();
 
 // A new token or link target changes every copy, so drop what's loaded.
 chrome.storage.onChanged.addListener(() => cache.clear());
@@ -33,6 +38,9 @@ const loadLinks = (url) => {
   // A failed load is worth another try right away, so don't keep it.
   links.then((result) => {
     if ((!result.ok || result.stackFailed) && cache.get(url)?.links === links) cache.delete(url);
+    if (!result.ok || linearUrls.get(url) === result.linearTabUrl) return;
+    linearUrls.set(url, result.linearTabUrl);
+    syncLinearTab();
   });
   return links;
 };
@@ -195,9 +203,35 @@ const currentPrUrl = () => {
   return match && `https://github.com/${match[1]}/${match[2]}/pull/${match[3]}`;
 };
 
+// Borrows the Files changed tab's classes, since GitHub's hashed class names change between builds.
+const tabClasses = (element) =>
+  [...element.classList].filter((name) => !name.startsWith("selected")).join(" ");
+
+/** Keeps a "View in Linear" tab at the end of the PR tabs while the PR has a Linear review. */
+const syncLinearTab = () => {
+  const existing = document.querySelector(".stackslop-linear-tab");
+  const linearUrl = linearUrls.get(currentPrUrl());
+  const filesTab = linearUrl && document.querySelector(FILES_TAB_SELECTOR);
+  if (!filesTab) return existing?.remove();
+
+  const className = `${tabClasses(filesTab)} stackslop-linear-tab`;
+  const current = existing?.href === linearUrl && existing.className === className;
+  if (current && filesTab.parentElement.lastElementChild === existing) return;
+
+  existing?.remove();
+  const tab = document.createElement("a");
+  tab.className = className;
+  tab.href = linearUrl;
+  tab.innerHTML = `${LINEAR_ICON}View in Linear`;
+  const filesIcon = filesTab.querySelector("svg");
+  if (filesIcon) tab.firstElementChild.setAttribute("class", tabClasses(filesIcon));
+  filesTab.parentElement.append(tab);
+};
+
 // GitHub navigates without page loads and re-renders parts of the page, so re-check on DOM changes.
 const sync = () => {
   const url = currentPrUrl();
+  syncLinearTab();
 
   for (const [name, find] of Object.entries(SPOTS)) {
     const existing = document.querySelector(`.stackslop-actions[data-spot="${name}"]`);
