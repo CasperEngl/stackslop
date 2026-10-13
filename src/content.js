@@ -222,8 +222,6 @@ const syncLinearTab = () => {
   const tab = document.createElement("a");
   tab.className = className;
   tab.href = linearUrl;
-  tab.target = "_blank";
-  tab.rel = "noopener";
   tab.innerHTML = `${LINEAR_ICON}View in Linear`;
   const filesIcon = filesTab.querySelector("svg");
   if (filesIcon) tab.firstElementChild.setAttribute("class", tabClasses(filesIcon));
