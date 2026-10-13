@@ -22,7 +22,7 @@ const RETRY_MS = 2000;
 const MAX_RETRIES = 3;
 
 const cache = new Map();
-// Each loaded PR's Linear review URL, or null when Linear hasn't linked it.
+// Each loaded PR's Linear review URL, or null when Linear hasn't linked it or the tab is off.
 const linearUrls = new Map();
 
 // A new token or link target changes every copy, so drop what's loaded.
@@ -38,8 +38,8 @@ const loadLinks = (url) => {
   // A failed load is worth another try right away, so don't keep it.
   links.then((result) => {
     if ((!result.ok || result.stackFailed) && cache.get(url)?.links === links) cache.delete(url);
-    if (!result.ok || linearUrls.get(url) === result.linearUrl) return;
-    linearUrls.set(url, result.linearUrl);
+    if (!result.ok || linearUrls.get(url) === result.linearTabUrl) return;
+    linearUrls.set(url, result.linearTabUrl);
     syncLinearTab();
   });
   return links;

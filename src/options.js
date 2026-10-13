@@ -2,9 +2,14 @@ const form = document.getElementById("form");
 const tokenInput = document.getElementById("token");
 const saved = document.getElementById("saved");
 
-const { token, linkTarget = "github" } = await chrome.storage.local.get(["token", "linkTarget"]);
+const {
+  token,
+  linkTarget = "github",
+  linearTab = "show",
+} = await chrome.storage.local.get(["token", "linkTarget", "linearTab"]);
 tokenInput.value = token ?? "";
 form.elements.linkTarget.value = linkTarget;
+form.elements.linearTab.value = linearTab;
 
 let savedTimer;
 
@@ -22,6 +27,8 @@ const save = async (changes) => {
 
 tokenInput.addEventListener("change", () => save({ token: tokenInput.value.trim() }));
 form.addEventListener("submit", (event) => event.preventDefault());
-for (const radio of form.elements.linkTarget) {
-  radio.addEventListener("change", () => save({ linkTarget: radio.value }));
+for (const name of ["linkTarget", "linearTab"]) {
+  for (const radio of form.elements[name]) {
+    radio.addEventListener("change", () => save({ [name]: radio.value }));
+  }
 }
