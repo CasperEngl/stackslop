@@ -29,9 +29,12 @@ const linearUrls = new Map();
 chrome.storage.onChanged.addListener(() => cache.clear());
 
 const loadLinearTab = async (url, linearUrl) => {
-  const tabUrl = linearUrl
-    ? await chrome.runtime.sendMessage({ type: "linear-tab-url", linearUrl }).catch(() => null)
-    : null;
+  let tabUrl = null;
+  try {
+    if (linearUrl) tabUrl = await chrome.runtime.sendMessage({ type: "linear-tab-url", linearUrl });
+  } catch {
+    // Reloading the extension leaves this script behind in open pages, where sendMessage throws.
+  }
   if (linearUrls.get(url) === tabUrl) return;
   linearUrls.set(url, tabUrl);
   syncLinearTab();
