@@ -43,6 +43,8 @@ The toolbar popup (<kbd>⌥</kbd><kbd>⇧</kbd><kbd>C</kbd>) previews the stack 
 **Linear Reviews:** set **Links point to** in the options, and links go to each PR's
 Linear review instead. <kbd>C</kbd> <kbd>G</kbd> still copies the GitHub link.
 
+A PR with a Linear review also gets a **View in Linear** tab after **Files changed**.
+
 ## Troubleshooting
 
 - **"GitHub couldn't find this PR"**: add a token in the options.

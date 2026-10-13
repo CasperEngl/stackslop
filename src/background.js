@@ -14,6 +14,7 @@ const loadLinks = async (url) => {
       pr: formatPrs([pr], linkTarget),
       stack: stack && { ...formatStack(stack, linkTarget), count: stack.prs.length },
       stackFailed,
+      linearUrl: pr.linearUrl,
       plain: {
         link: linkFor(pr, linkTarget),
         github: pr.url,
