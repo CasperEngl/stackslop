@@ -1,3 +1,5 @@
+import { fetchLinearWorkspaces } from "./linear.js";
+
 const form = document.getElementById("form");
 const tokenInput = document.getElementById("token");
 const saved = document.getElementById("saved");
@@ -32,3 +34,16 @@ for (const name of ["linkTarget", "linearTab"]) {
     radio.addEventListener("change", () => save({ [name]: radio.value }));
   }
 }
+
+// Says what the tab will do, since the Linear check has no setting of its own to show it.
+fetchLinearWorkspaces().then(
+  (workspaces) => {
+    document.getElementById("linear-status").textContent = workspaces.length
+      ? `Signed in to: ${workspaces.join(", ")}.`
+      : "You’re not signed in to Linear in this browser, so the tab stays hidden.";
+  },
+  () => {
+    document.getElementById("linear-status").textContent =
+      "Linear couldn’t be asked which workspaces you’re in, so the tab shows on every linked PR.";
+  },
+);

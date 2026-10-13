@@ -43,8 +43,9 @@ The toolbar popup (<kbd>⌥</kbd><kbd>⇧</kbd><kbd>C</kbd>) previews the stack 
 **Linear Reviews:** set **Links point to** in the options, and links go to each PR's
 Linear review instead. <kbd>C</kbd> <kbd>G</kbd> still copies the GitHub link.
 
-A PR with a Linear review also gets a **View in Linear** tab after **Files changed**. Turn
-it off in the options.
+A PR with a Linear review also gets a **View in Linear** tab after **Files changed**, when
+the review is in a Linear workspace you're signed in to in this browser. Turn it off in the
+options.
 
 ## Troubleshooting
 

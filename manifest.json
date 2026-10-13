@@ -51,6 +51,7 @@
     "storage"
   ],
   "host_permissions": [
-    "https://api.github.com/*"
+    "https://api.github.com/*",
+    "https://client-api.linear.app/*"
   ]
 }
